@@ -1,0 +1,194 @@
+<script src="~/Scripts/jquery-1.7.1.min.js"></script>  
+  
+<h2>Cascading Dropdownlist</h2>  
+<table>  
+    <tr>  
+        <td>  
+            <label>State</label>  
+        </td>  
+        <td>  
+@Html.DropDownListFor(x => x.State, Model.StateNames, "--Select--", new { @id="ddlState"});  
+        </td>  
+    </tr>  
+    <tr>  
+        <td>  
+            <label>District</label>  
+        </td>  
+        <td id="CityDiv">  
+@Html.DropDownListFor(x => x.City, new List<SelectListItem>(), "--Select--", new { @id="ddlCity"});  
+        </td>  
+    </tr>  
+</table>  
+  
+<script type="text/javascript">  
+    $(document).ready(function () {  
+        $('#ddlState').change(function () {  
+            $.ajax({  
+                type: "post",  
+                url: "/DropDownList/GetDistrict",  
+                data: { stateId: $('#ddlState').val() },  
+                datatype: "json",  
+                traditional: true,  
+                success: function (data) {  
+                    var City = "<select id='ddlCity'>";  
+                    City = City + '<option value="">--Select--</option>';  
+                    for (var i = 0; i < data.length; i++)  
+                    {  
+                        City = City + '<option value=' + data[i].CityId + '>' + data[i].CityName + '</option>';  
+                    }  
+                    City = City + '</select>';  
+                    $('#City').html(City);  
+                }  
+            });  
+        });  
+    });  
+</script> 
+
+=========================================
+Create Table MasStates
+(
+ StateId int identity primary key,
+ StateName nvarchar(50)
+)
+
+Insert into MasStates values ('Rajasthan')
+Insert into MasStates values ('Gujrat')
+Insert into MasStates values ('Panjab')
+
+
+Create procedure spGETStates
+as
+Begin
+ Select StateId, StateName from MasStates
+End
+
+
+
+Create Table MasCity
+(
+ CityId int identity primary key,
+ CityName nvarchar(50),
+ StateId int foreign key references dbo.MasStates(StateId)
+)
+
+Insert into MasCity values ('Jaipur', 1)
+Insert into MasCity values ('Jodhpur', 1)
+Insert into MasCity values ('Kota', 1)
+			
+Insert into MasCity values ('GandiNagar', 2)
+Insert into MasCity values ('HimatNagar', 2)
+Insert into MasCity values ('VadNagar', 2)
+			
+Insert into MasCity values ('Chandigarh', 3)
+Insert into MasCity values ('Amritsar', 3)
+Insert into MasCity values ('Jalandhar', 3)
+
+Create procedure spGetCityByStateId
+@StateId int
+as
+Begin
+ Select CityId, CityName from MasCity 
+ where StateId = @StateId
+End
+
+================================================================
+DAL
+  public void Write()
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand sqlCommand = new SqlCommand("sp_InsertProcName", connection))
+                {
+                    sqlCommand.CommandType = CommandType.StoredProcedure;
+
+                    sqlCommand.Parameters.Add(new SqlParameter("@CustomerName", SqlDbType.NVarChar, 40));
+                    sqlCommand.Parameters["@CustomerName"].Value = "Jitendra";
+                    // Add the output parameter.
+                    sqlCommand.Parameters.Add(new SqlParameter("@CustomerID", SqlDbType.Int));
+                    sqlCommand.Parameters["@CustomerID"].Direction = ParameterDirection.Output;
+                    try
+                    {
+                        connection.Open();
+                        sqlCommand.ExecuteNonQuery();
+                        var Out = (int)sqlCommand.Parameters["@CustomerID"].Value;
+
+                    }
+                    catch(Exception e)
+                    {
+                        //LogException
+
+                            
+
+                    }
+                    finally
+                    {
+                        connection.Close();
+                    }
+                }
+            }
+        }
+
+        public void Read()
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand sqlCommand = new SqlCommand("sp_RetriveProcName", connection))
+                {
+                    sqlCommand.CommandType = CommandType.StoredProcedure;
+                    sqlCommand.Parameters.Add(new SqlParameter("@orderID", SqlDbType.Int));
+                    sqlCommand.Parameters["@orderID"].Value = "1";
+                    try
+                    {
+                        connection.Open();
+                        using (SqlDataReader dataReader = sqlCommand.ExecuteReader())
+                        {
+                            DataTable dataTable = new DataTable();
+                            dataTable.Load(dataReader);
+                           foreach(DataRow row in  dataTable.Rows)
+                            {
+                                string name = row["name"].ToString();
+                                string description = row["description"].ToString();
+                            }
+                            dataReader.Close();
+                        }
+                    }
+                    catch
+                    {
+                        //LogException
+                    }
+                    finally
+                    {
+                        // Close the connection.
+                        connection.Close();
+                    }
+
+                }
+            }
+        }
+==============================
+Pro for save record
+ALTER PROC sp_InsertProcName
+@CustomerName nvarchar(max),
+@CustomerID int output
+as 
+BEGIN
+      BEGIN TRY
+          INSERT INTO EMp(Name)
+
+          VALUES(@CustomerName)
+
+          SET @CustomerID = SCOPE_IDENTITY()
+
+          RETURN @CustomerID
+
+      END TRY
+
+      BEGIN CATCH
+		--log
+      END CATCH
+END
+===============================================
+
+
