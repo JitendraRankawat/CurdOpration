@@ -193,3 +193,42 @@ END
 ===============================================
 Checkedboxes
 https://stackoverflow.com/questions/37778489/how-to-make-check-box-list-in-asp-net-mvc
+
+=================================================================
+
+
+ASP.NET MVC 4.0 : Pass Dropdown list Selected Value In (From Controller To View) Edit Page
+Step1: Create class for dropdownlist values
+public class Country
+{
+  public int Id { get; set;}
+  public string Text { get; set; }
+}
+
+ Step2:; Add following code in Controller
+ Controller Code:
+ public ActionResult Edit(int id)
+ {
+  var countryList = new[]
+  {
+   new Roles{ Text = "India", Id= "1" },
+   new Roles{ Text = "USA", Id = "2" },
+   new Roles{ Text = "UK", Id = "3"},
+   new Roles{ Text = "China", Id = "4"},
+   new Roles{ Text = "Japan", Id = "5"},
+   new Roles{ Text = "Russia", Id = "6"}
+  };
+  // Passing selected value to dropdownlist(fetch from database or some where else)...
+  // For example your class name is customer, dropdownlist display value will be customer.Country in edit mode
+ ViewData["countryList "] = new SelectList(countryList, "Id","Text",customer.Country);
+ return View(customer);
+}
+
+Step3: Add following code in View
+View Code:
+@Html.DropDownList("countrtddList", ViewData["countryList"] as SelectList)
+
+It appears that the DropDown must not have the same name has the ViewData name.
+Happy coding.
+
+
