@@ -104,6 +104,7 @@ DAL
 
                     sqlCommand.Parameters.Add(new SqlParameter("@CustomerName", SqlDbType.NVarChar, 40));
                     sqlCommand.Parameters["@CustomerName"].Value = "Jitendra";
+		      // sqlCommand.Parameters.AddWithValue("@City", "Jodhpur");
                     // Add the output parameter.
                     sqlCommand.Parameters.Add(new SqlParameter("@CustomerID", SqlDbType.Int));
                     sqlCommand.Parameters["@CustomerID"].Direction = ParameterDirection.Output;
